@@ -1,0 +1,67 @@
+{
+  "name": "react-fullstack-template-ts",
+  "version": "0.0.1",
+  "description": "A full-stack template for a React + Node.js app, written in TypeScript",
+  "author": "Arjun Barrett",
+  "license": "MIT",
+  "browserslist": [
+    "last 2 versions",
+    "> 2%",
+    "not dead",
+    "maintained node versions"
+  ],
+  "scripts": {
+    "start": "tsnd --transpileOnly src/server",
+    "lint": "eslint --fix \"src/**/*.ts{,x}\"",
+    "ts-check": "tsc && tsc --noEmit src/client/sw.ts",
+    "build-client": "NODE_ENV=production parcel build src/client/index.html --no-source-maps --experimental-scope-hoisting --detailed-report",
+    "build-server": "NODE_ENV=production parcel build src/server/index.ts -t node -d server --no-source-maps --detailed-report",
+    "build": "echo 'Linting...' && yarn lint && echo 'Performing type checks...' && yarn ts-check && echo 'Building client...' && yarn build-client && echo 'Building server...' && yarn build-server && echo 'Done!'"
+  },
+  "dependencies": {
+    "argon2": "^0.25.1",
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.4",
+    "express": "^4.17.1",
+    "express-graphql": "^0.9.0",
+    "graphql": "^14.5.8",
+    "jsonwebtoken": "^8.5.1",
+    "nedb": "^1.8.0",
+    "prettier": "^1.19.1",
+    "react": "^16.11.0",
+    "react-dom": "^16.11.0",
+    "react-router": "^5.1.2",
+    "react-router-dom": "^5.1.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.2",
+    "@types/nedb": "^1.8.9",
+    "@types/node": "^12.12.5",
+    "@types/parcel-bundler": "^1.12.1",
+    "@types/react": "^16.9.11",
+    "@types/react-dom": "^16.9.3",
+    "@types/react-router-dom": "^5.1.2",
+    "@typescript-eslint/eslint-plugin": "^2.6.1",
+    "@typescript-eslint/parser": "^2.6.1",
+    "eslint": "^6.6.0",
+    "eslint-config-prettier": "^6.5.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "eslint-plugin-react": "^7.16.0",
+    "parcel-bundler": "^1.12.4",
+    "parcel-plugin-precache-manifest": "^3.0.0",
+    "parcel-plugin-pwa-manifest": "^2.3.0",
+    "ts-node-dev": "^1.0.0-pre.44",
+    "typescript": "^3.6.4"
+  },
+  "precacheManifest": {
+    "inject": true
+  },
+  "pwaManifest": {
+    "genIconOpts": {
+      "baseIcon": "src/client/icon.svg",
+      "sizes": [],
+      "resizeMethod": "fill",
+      "genFavicons": true
+    }
+  }
+}
