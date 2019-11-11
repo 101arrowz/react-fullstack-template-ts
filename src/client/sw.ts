@@ -40,7 +40,7 @@ sw.addEventListener('fetch', e => {
       const res = await cache.match(e.request);
       if (res) return res;
       const freshRes = await fetch(e.request);
-      cache.put(e.request, freshRes.clone());
+      if (e.request.method === 'GET') cache.put(e.request, freshRes.clone());
       return freshRes;
     })
   );

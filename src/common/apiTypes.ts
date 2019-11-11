@@ -66,3 +66,52 @@ export type Post = Content &
 export type Comment = Content & {
   likes: number;
 };
+// Can't set type for this one if we want to use as enum-like structure
+export const ResponseErrors = {
+  USERNAME_NOT_FOUND: {
+    code: 404,
+    friendly: 'The requested username was not found.'
+  },
+  USERNAME_OR_EMAIL_ALREADY_EXISTS: {
+    code: 409,
+    friendly: 'The requested username already exists.'
+  },
+  INVALID_REFRESH_TOKEN: {
+    code: 401,
+    friendly: 'The login credentials have expired.'
+  },
+  INVALID_TOKEN: {
+    code: 401,
+    friendly: 'The login session has expired.'
+  },
+  INCORRECT_PASSWORD: {
+    code: 401,
+    friendly: 'The password is incorrect.'
+  },
+  INVALID_USERNAME: {
+    code: 400,
+    friendly: 'The username is invalid.'
+  },
+  INVALID_EMAIL: {
+    code: 400,
+    friendly: 'The email is invalid.'
+  },
+  INVALID_PASSWORD: {
+    code: 400,
+    friendly: 'The password is invalid.'
+  },
+  COMMON_PASSWORD: {
+    code: 403,
+    friendly:
+      'The password provided is too common. Pick a more secure password.'
+  },
+  NO_CHANGES: {
+    code: 400,
+    friendly: 'No changes were made.'
+  },
+  UNKNOWN: {
+    code: 500,
+    friendly: 'An unknown error occurred. Please try again later.'
+  }
+};
+export type ResponseError = keyof typeof ResponseErrors;

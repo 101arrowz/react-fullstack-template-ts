@@ -1,32 +1,26 @@
-import express from 'express';
-import Bundler from 'parcel-bundler';
-import { resolve } from 'path';
+import express from './util/customExpress';
+import cookieParser from 'cookie-parser';
+import { addAuthRoutes, authorize } from './util/auth';
+/**
+ * Creates the server.
+ */
 const createApp = (): express.Application => {
   const app = express();
-  app.get('/', (req, res) => {
-    res.send('Hello world!');
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(cookieParser()); // Could use signed cookies, but the JWT itself has a signature; unncessary
+  addAuthRoutes(app);
+  app.get('/', authorize, (req, res) => {
+    res.success({
+      data: 'Hello world!'
+    });
   });
   return app;
 };
 
 if (!module.parent) {
-  const api = createApp();
-  if (process.env.NODE_ENV === 'production') {
-    const PORT = parseInt(process.env.PORT || '3000');
-    console.log(`Starting server on http://localhost:${PORT}`);
-    api.listen(PORT);
-  } else {
-    const app = express();
-    const bundler = new Bundler(
-      resolve(__dirname, '..', 'client', 'index.html')
-    );
-    app.use(process.env.API_PATH || '/api', api);
-    app.use(bundler.middleware());
-    const PORT = parseInt(process.env.PORT || '1234');
-    app.listen(PORT);
-    bundler.on('buildEnd', () =>
-      console.log(`Starting server on http://localhost:${PORT}`)
-    );
-  }
+  const PORT = parseInt(process.env.PORT || '3000');
+  console.log(`Starting server on http://localhost:${PORT}`);
+  createApp().listen(PORT);
 }
 export default createApp;

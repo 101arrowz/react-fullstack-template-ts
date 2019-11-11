@@ -1,6 +1,10 @@
 import DataStore from 'nedb';
 import { resolve } from 'path';
-import { User, Post, Comment, DM } from '../../../common/types';
+import { User, Post, Comment, DM } from '../../../common/apiTypes';
+/**
+ * Create an NeDB database
+ * @param name the name of the database
+ */
 const createDB = <T>(name: string): DataStore<T> =>
   new DataStore<T>({
     filename: resolve(__dirname, `${name}.db`),

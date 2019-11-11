@@ -14,7 +14,8 @@
     "jsx": "react",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "pretty": true
+    "pretty": true,
+    "typeRoots": ["node_modules/@types", "src/**/types"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["src/client/sw.ts"] // We need to handle this separately

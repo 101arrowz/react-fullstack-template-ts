@@ -18,5 +18,14 @@
     "react": {
       "version": "detect"
     }
+  },
+  "rules": {
+    "prefer-const": ["error", {
+      "destructuring": "all"
+    }],
+    "@typescript-eslint/explicit-function-return-type": ["warn", {
+      "allowExpressions": true
+    }],
+    "@typescript-eslint/no-non-null-assertion": ["off"]
   }
 }
