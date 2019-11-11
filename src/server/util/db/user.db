@@ -1,1 +1,0 @@
-{"_id":"usergrr3bf8rk2u6v4mi","username":"test","name":"test","email":"ing","pass":"$argon2id$v=19$m=4096,t=3,p=2$K6gA4ZlNKmhUAhoc6qm/Ig$Crqey1Nu8TIGCAT6F07zL5UclJr8dECMjM0j0ylCrHk","signedUp":{"$$date":1573462361897},"lastLogin":{"$$date":1573462361897},"profile":{"_id":"profilegrr3bf8rk2u6v4nd"},"prefs":{"private":false,"lang":"en-US"}}

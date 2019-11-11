@@ -218,7 +218,7 @@ const addAuthRoutes = (app: express.Application): void => {
             else {
               const date = new Date();
               const newUser: User = {
-                _id: uid('user'),
+                _id: uid('user-'),
                 username,
                 name: username,
                 email,
@@ -229,7 +229,7 @@ const addAuthRoutes = (app: express.Application): void => {
                 signedUp: date,
                 lastLogin: date,
                 profile: {
-                  _id: uid('profile')
+                  _id: uid('profile-')
                 },
                 prefs: {
                   private: false,

@@ -4,3 +4,4 @@ dist/
 *.log
 .cache/
 !/src/server
+*.db
