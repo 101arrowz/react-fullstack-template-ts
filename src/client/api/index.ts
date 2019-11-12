@@ -1,14 +1,13 @@
-import { ResponseError } from '../../common/apiTypes';
-type RequestOptions = {
+import { ResponseError, } from '../../common/apiTypes';
+type RequestOptions<T> = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-  graphql?: GraphQLOptions;
-  disableCredentials?: boolean;
+  body?: RequestBody<T>;
+  credentialsNeeded?: boolean;
   raw?: object;
 };
-type GraphQLOptions = {
-  query?: string;
-  variables?: { [k: string]: unknown }; // Basically any type
-};
+type RequestBody<T> = {
+  resolve?: Array<keyof T>
+}
 type ServerError = {
   code: ResponseError;
   friendly: string;
@@ -22,27 +21,19 @@ const request = <T = unknown>(
   path: string,
   {
     method = 'GET',
-    disableCredentials,
-    graphql: { query, variables } = {},
-    raw
-  }: RequestOptions = {}
+    credentialsNeeded = true,
+    body,
+  }: RequestOptions<T> = {}
 ): Promise<T | ServerError> =>
   new Promise(async (resolve, reject) => {
-    const res = await fetch((process.env.API_PATH || '/api') + path, {
+    const res = await fetch(`/api/${path}`, {
       method,
-      credentials: disableCredentials ? 'omit' : 'include',
+      credentials: credentialsNeeded ? 'include' : 'omit',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json'
       },
-      body: raw
-        ? JSON.stringify(raw)
-        : query
-        ? JSON.stringify({
-            query,
-            variables: variables ? JSON.stringify(variables) : undefined
-          })
-        : undefined
+      body: typeof body === 'undefined' ? undefined : JSON.stringify(body)
     });
     const data = await res.json();
     if (data.err) reject(data.err as ServerError);

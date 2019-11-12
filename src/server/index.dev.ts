@@ -5,7 +5,7 @@ import createApp from '.';
 
 const app = express();
 const bundler = new Bundler(resolve(__dirname, '..', 'client', 'index.html'));
-app.use(process.env.API_PATH || '/api', createApp());
+app.use('/api', createApp());
 app.use(bundler.middleware());
 const PORT = parseInt(process.env.PORT || '1234');
 app.listen(PORT);

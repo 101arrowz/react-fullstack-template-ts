@@ -1,6 +1,6 @@
 // All of these are examples. Feel free to make these what you need them to be!
 // Prefer types to interfaces because it should not be extendable (unless general form of other types)
-export type Identifier = string;
+export type Identifier<T = string> = string | T; // Allow either a string ID or the object itself
 export interface Identifiable {
   _id: Identifier; // Never changes for an element - can be used for shortlinking
 }
@@ -21,11 +21,11 @@ export type User = Identifiable &
     lastLogin: Date;
     profile: Profile;
     prefs: Preferences;
-    friends?: User['_id'][];
+    friends?: Identifier<User>[];
     friendRequests?: FriendRequests;
-    posts?: Post['_id'][];
-    comments?: Comment['_id'][];
-    likedPosts?: Post['_id'][];
+    posts?: Identifier<Post>[];
+    comments?: Identifier<Comment>[];
+    likedPosts?: Identifier<Post>[];
     conversations?: Conversations;
   };
 export type Profile = Identifiable &
@@ -35,8 +35,8 @@ export type Profile = Identifiable &
     comments?: Comment[];
   };
 export type FriendRequests = {
-  incoming: DM['_id'][];
-  outgoing: DM['_id'][];
+  incoming: Identifier<DM>[];
+  outgoing: Identifier<DM>[];
 };
 export type Edit<T> = {
   value: T;
@@ -49,14 +49,14 @@ export type Preferences = {
 };
 export interface Content extends Identifiable {
   content: EditHistory<string>;
-  owner: User['_id'];
+  owner: Identifier<User>;
 }
 export type DM = Content &
   Identifiable &
   Expirable & {
     read: boolean;
   };
-export type Conversations = { [id in Identifier]: DM['_id'][] };
+export type Conversations = [Identifier<User>, DM[]];
 export type Post = Content &
   Visible & {
     title: string;
@@ -65,12 +65,13 @@ export type Post = Content &
   };
 export type Comment = Content & {
   likes: number;
-};
+}; 
+
 // Can't set type for this one if we want to use as enum-like structure
 export const ResponseErrors = {
-  USERNAME_NOT_FOUND: {
+  USERNAME_PASSWORD_MISMATCH: { // Prevent attackers from checking if an account exists
     code: 404,
-    friendly: 'The requested username was not found.'
+    friendly: 'The credentials provided do not match or do not exist.'
   },
   USERNAME_OR_EMAIL_ALREADY_EXISTS: {
     code: 409,
@@ -83,10 +84,6 @@ export const ResponseErrors = {
   INVALID_TOKEN: {
     code: 401,
     friendly: 'The login session has expired.'
-  },
-  INCORRECT_PASSWORD: {
-    code: 401,
-    friendly: 'The password is incorrect.'
   },
   INVALID_USERNAME: {
     code: 400,
@@ -112,6 +109,10 @@ export const ResponseErrors = {
   UNKNOWN: {
     code: 500,
     friendly: 'An unknown error occurred. Please try again later.'
+  },
+  OFFLINE: {
+    code: 503,
+    friendly: 'Cannot access online content because the network request failed.'
   }
 };
 export type ResponseError = keyof typeof ResponseErrors;

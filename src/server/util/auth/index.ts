@@ -78,7 +78,8 @@ express.response.assignTokens = function(payload, refreshPayload = payload) {
   });
   this.cookie('refreshToken', genRefreshToken(refreshPayload), {
     maxAge: 1000 * REFRESH_VALID,
-    httpOnly: true
+    httpOnly: true,
+    sameSite: true
   });
 };
 /**
@@ -94,7 +95,7 @@ const authorize: express.Handler = (req, res, next) => {
     )
       res.err;
     else {
-      const payload = { username: decoded.username };
+      const payload = { _id: decoded._id };
       res.assignTokens(payload);
       req.jwt = payload;
       next();
@@ -116,7 +117,7 @@ const authorize: express.Handler = (req, res, next) => {
       } else res.err('UNKNOWN');
     } else if (decoded.iat * 1000 < serverStartTime) res.err('INVALID_TOKEN');
     else {
-      req.jwt = { username: decoded.username };
+      req.jwt = { _id: decoded._id };
       next();
     }
   };
@@ -148,12 +149,12 @@ const addAuthRoutes = (app: express.Application): void => {
     else
       db.findOne({ username }, async (err, doc) => {
         if (err) res.err('UNKNOWN');
-        else if (!doc) res.err('USERNAME_NOT_FOUND');
+        else if (!doc) res.err('USERNAME_PASSWORD_MISMATCH');
         else if (!(await argon2.verify(doc.pass, pass)))
-          res.err('INCORRECT_PASSWORD');
+          res.err('USERNAME_PASSWORD_MISMATCH');
         else {
-          res.assignTokens({ username }); // Change here to change data saved in token everywhere
-          res.success({ username });
+          res.assignTokens({ _id: doc._id }); // Change here to change data saved in token everywhere
+          res.success();
         }
       });
   });
@@ -253,9 +254,9 @@ const addAuthRoutes = (app: express.Application): void => {
       else
         db.findOne({ username }, async (err, doc) => {
           if (err) res.err('UNKNOWN');
-          else if (!doc) res.err('USERNAME_NOT_FOUND');
+          else if (!doc) res.err('USERNAME_PASSWORD_MISMATCH');
           else if (!(await argon2.verify(doc.pass, pass)))
-            res.err('INCORRECT_PASSWORD');
+            res.err('USERNAME_PASSWORD_MISMATCH');
           else
             db.remove(doc, err => {
               if (err) res.err('UNKNOWN');
@@ -264,7 +265,7 @@ const addAuthRoutes = (app: express.Application): void => {
         });
     })
     .patch(authorize, (req, res) => {
-      const oldUsername = req.jwt!;
+      const { _id: oldID } = req.jwt!;
       const { username, email } = req.body;
       if (!username && !email) res.err('NO_CHANGES');
       if (username && (username.length < 4 || username.length > 32))
@@ -280,7 +281,7 @@ const addAuthRoutes = (app: express.Application): void => {
           else if (doc) res.err('USERNAME_OR_EMAIL_ALREADY_EXISTS');
           else {
             db.update(
-              { username: oldUsername },
+              { _id: oldID },
               { ...(username && { username }), ...(email && { email }) }
             );
             res.success();
