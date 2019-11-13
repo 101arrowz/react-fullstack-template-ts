@@ -10,15 +10,15 @@ const App: React.FC = () => (
   <Router>
     <Switch>
       {routes.map(route => {
-        const [path, Element] = route;
+        const [path, JSX, props] = route;
         return (
-          <Route path={path} key={path}>
-            <Element />
+          <Route {...props} path={path} key={path}>
+            <JSX />
           </Route>
         );
       })}
       <Route path="*">
-        <Redirect to="/" />
+        <Redirect to="/"/>
       </Route>
     </Switch>
   </Router>

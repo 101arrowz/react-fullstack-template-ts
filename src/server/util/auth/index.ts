@@ -7,7 +7,7 @@ import rateLimit from 'express-rate-limit';
 import { userDB as db } from '../db';
 
 import commonPasswords from './commonPasswords.json';
-import { User } from '../../../common/apiTypes';
+import { User, ResponseErrors } from '../../../common/apiTypes';
 
 let SECRET_JWT_KEY: jwt.Secret = process.env.PKEY as string;
 if (!SECRET_JWT_KEY) {
@@ -185,9 +185,7 @@ const addAuthRoutes = (app: express.Application): void => {
     rateLimit({
       windowMs: 60000,
       max: 30,
-      message: JSON.stringify({
-        err: 'TooManyRequests'
-      })
+      message: JSON.stringify(ResponseErrors.TOO_MANY_REQUESTS)
     })
   );
   app

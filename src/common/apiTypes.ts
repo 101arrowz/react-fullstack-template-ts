@@ -113,6 +113,10 @@ export const ResponseErrors = {
   OFFLINE: {
     code: 503,
     friendly: 'Cannot access online content because the network request failed.'
+  },
+  TOO_MANY_REQUESTS: {
+    code: 403,
+    friendly: 'Requests are being sent too quickly. Please try again later.'
   }
 };
 export type ResponseError = keyof typeof ResponseErrors;
