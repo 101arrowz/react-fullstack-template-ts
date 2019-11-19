@@ -14,7 +14,7 @@ import uid from 'uniqid';
  * A wrapped NeDB database
  * @param name The name of the database
  */
-class DB<G extends Identifiable> extends DataStore<G> {
+export class DB<G extends Identifiable> extends DataStore<G> {
   private static promisify<T>(
     action: (cb: (err: Error, val: T) => void) => void
   ): Promise<T> {
@@ -140,9 +140,17 @@ class DB<G extends Identifiable> extends DataStore<G> {
 }
 
 // Node.js modules are only loaded once, so doing this is OK
-const userDB = new DB<User>('user');
-const postDB = new DB<Post>('post');
-const commentDB = new DB<Comment>('comment');
-const DMDB = new DB<DM>('dm');
+const allDB = {
+  user: new DB<User>('user'),
+  post: new DB<Post>('post'),
+  comment: new DB<Comment>('comment'),
+  dm: new DB<DM>('dm')
+}
 
+const userDB = allDB.user;
+const postDB = allDB.post;
+const commentDB = allDB.comment;
+const DMDB = allDB.dm;
+
+export default allDB;
 export { userDB, postDB, commentDB, DMDB };

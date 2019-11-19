@@ -9,49 +9,35 @@ import { userDB } from '../db';
 type LocalRestrictionLevel = RestrictionLevel | 'unset';
 type Restricter = <T extends Owned>(
   data: T,
-  requester: Identifier
+  requester: Identifier,
+  owner?: User
 ) => Promise<boolean>;
 const accessibleData: { [k in LocalRestrictionLevel]: Restricter } = {
   async all() {
     return true;
   },
-  async friends(data, requester) {
-    return new Promise<User>((resolve, reject) =>
-      userDB.findOne(
-        {
-          _id: data.owner
-        },
-        (err, doc) => (err ? reject(err) : resolve(doc))
-      )
-    ).then(doc => {
-      return !!doc.profile.friends && doc.profile.friends.includes(requester);
-    });
+  async friends(data, requester, owner) {
+    const doc = owner || await userDB.resolve(data.owner);
+    return !!doc && !!doc.profile.friends && doc.profile.friends.includes(requester);
   },
   async owner(data, requester) {
     return data.owner === requester;
   },
-  async unset(data, requester) {
-    return new Promise<User>((resolve, reject) =>
-      userDB.findOne(
-        {
-          _id: data.owner
-        },
-        (err, doc) => (err ? reject(err) : resolve(doc))
-      )
-    ).then(doc =>
-      doc.prefs.private
-        ? this.owner(data, requester)
-        : this.all(data, requester)
-    );
+  async unset(data, requester, owner) {
+    const doc = owner || await userDB.resolve(data.owner);
+    return !!doc && doc.prefs.private ? this.owner(data, requester, owner) : this.all(data, requester, owner);
   }
 };
 const allowed = async <T extends Visible & Owned>(
   data: T,
-  requester: Identifier<User>
+  requester: Identifier<User>,
+  owner?: User
 ): Promise<T | void> => {
   if (typeof requester !== 'string') requester = requester._id;
   const { restrictedTo, ...newData } = data;
-  const isAllowed = accessibleData[restrictedTo || 'unset'](newData, requester);
+  if (owner && owner._id !== data.owner)
+    owner = undefined;
+  const isAllowed = accessibleData[restrictedTo || 'unset'](newData, requester, owner);
   if (isAllowed) {
     for (const kv of Object.entries(newData).filter(
       el =>
@@ -60,7 +46,7 @@ const allowed = async <T extends Visible & Owned>(
         el[1].hasOwnProperty('owner')
     ) as [keyof typeof newData, Visible & Owned][]) {
       // Assume that all required properties will not have a restriction level
-      const newValue = await allowed(kv[1], requester);
+      const newValue = await allowed(kv[1], requester, owner);
       if (!newValue) delete newData[kv[0]];
       else
         newData[
