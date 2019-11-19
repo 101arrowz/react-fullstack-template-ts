@@ -1,4 +1,4 @@
-import { ResponseError, } from '../../common/apiTypes';
+import { ResponseError } from '../../common/apiTypes';
 type RequestOptions<T> = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: RequestBody<T>;
@@ -6,8 +6,8 @@ type RequestOptions<T> = {
   raw?: object;
 };
 type RequestBody<T> = {
-  resolve?: Array<keyof T>
-}
+  resolve?: (keyof T)[];
+};
 type ServerError = {
   code: ResponseError;
   friendly: string;
@@ -19,11 +19,7 @@ type ServerError = {
  */
 const request = <T = unknown>(
   path: string,
-  {
-    method = 'GET',
-    credentialsNeeded = true,
-    body,
-  }: RequestOptions<T> = {}
+  { method = 'GET', credentialsNeeded = true, body }: RequestOptions<T> = {}
 ): Promise<T | ServerError> =>
   new Promise(async (resolve, reject) => {
     const res = await fetch(`/api/${path}`, {

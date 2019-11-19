@@ -1,6 +1,9 @@
 import express from './util/customExpress';
 import cookieParser from 'cookie-parser';
 import { addAuthRoutes, authorize } from './util/auth';
+import { userDB } from './util/db';
+import allowed from './util/misc/allowed';
+
 /**
  * Creates the server.
  */
@@ -10,10 +13,20 @@ const createApp = (): express.Application => {
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser()); // Could use signed cookies, but the JWT itself has a signature; unncessary
   addAuthRoutes(app);
-  app.get('/', authorize, (req, res) => {
-    res.success({
-      data: 'Hello world!'
-    });
+  app.use(authorize);
+  app.get('/user/:id', (req, res) => {
+    const { _id } = req.jwt!;
+    userDB
+      .search({
+        username: req.params.id
+      })
+      .then(
+        user =>
+          user
+            ? res.success(allowed(user.profile, _id as string))
+            : res.err('USERNAME_NOT_FOUND'),
+        () => res.err('UNKNOWN')
+      );
   });
   return app;
 };

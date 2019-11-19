@@ -18,7 +18,7 @@ const App: React.FC = () => (
         );
       })}
       <Route path="*">
-        <Redirect to="/"/>
+        <Redirect to="/" />
       </Route>
     </Switch>
   </Router>

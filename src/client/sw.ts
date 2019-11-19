@@ -5,7 +5,7 @@
 import { ResponseErrors } from '../common/apiTypes';
 type SW = ServiceWorkerGlobalScope & {
   __precacheManifest: {
-    files: Array<string>;
+    files: string[];
     ver: string;
   };
 };

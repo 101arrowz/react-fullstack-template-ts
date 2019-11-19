@@ -5,9 +5,10 @@ import uid from 'uniqid';
 import { sha256 } from 'js-sha256';
 import rateLimit from 'express-rate-limit';
 import { userDB as db } from '../db';
+import allowed from '../misc/allowed';
 
 import commonPasswords from './commonPasswords.json';
-import { User, ResponseErrors } from '../../../common/apiTypes';
+import { User, ResponseErrors, Identifier } from '../../../common/apiTypes';
 
 let SECRET_JWT_KEY: jwt.Secret = process.env.PKEY as string;
 if (!SECRET_JWT_KEY) {
@@ -147,16 +148,17 @@ const addAuthRoutes = (app: express.Application): void => {
     if (!username) res.err('INVALID_USERNAME');
     else if (!pass) res.err('INVALID_PASSWORD');
     else
-      db.findOne({ username }, async (err, doc) => {
-        if (err) res.err('UNKNOWN');
-        else if (!doc) res.err('USERNAME_PASSWORD_MISMATCH');
-        else if (!(await argon2.verify(doc.pass, pass)))
-          res.err('USERNAME_PASSWORD_MISMATCH');
-        else {
-          res.assignTokens({ _id: doc._id }); // Change here to change data saved in token everywhere
-          res.success();
-        }
-      });
+      db.search({ username }).then(
+        async doc => {
+          if (!(doc && (await argon2.verify(doc.pass, pass))))
+            res.err('USERNAME_PASSWORD_MISMATCH');
+          else {
+            res.assignTokens({ _id: doc._id }); // Change here to change data saved in token everywhere
+            res.success(allowed(doc.profile, doc));
+          }
+        },
+        () => res.err('UNKNOWN')
+      );
   });
   app.delete('/logout', (req, res) => {
     if (req.cookies.token) res.clearCookie('token');
@@ -209,40 +211,39 @@ const addAuthRoutes = (app: express.Application): void => {
       else if (commonPasswords.find(el => sha256.hmac(username, el) === pass))
         res.err('COMMON_PASSWORD');
       else
-        db.findOne(
-          email ? { $or: [{ email }, { username }] } : { username },
-          async (err, doc) => {
-            if (err) res.err('UNKNOWN');
-            else if (doc) res.err('USERNAME_OR_EMAIL_ALREADY_EXISTS');
+        db.search(
+          email ? { $or: [{ email }, { username }] } : { username }
+        ).then(
+          async doc => {
+            if (doc) res.err('USERNAME_OR_EMAIL_ALREADY_EXISTS');
             else {
               const date = new Date();
-              const newUser: User = {
-                _id: uid('user-'),
+              const _id = uid('user-');
+              db.createItem({
+                _id,
                 username,
-                name: username,
                 email,
                 pass: await argon2.hash(pass, {
                   type: argon2.argon2id,
                   parallelism: 2
                 }),
-                signedUp: date,
-                lastLogin: date,
                 profile: {
-                  _id: uid('profile-')
+                  owner: _id,
+                  name: username,
+                  signedUp: date,
+                  lastLogin: date
                 },
                 prefs: {
                   private: false,
                   lang: 'en-US'
                 }
-              };
-              db.insert(newUser, err => {
-                if (err) res.err('UNKNOWN');
-                else {
-                  res.success();
-                }
-              });
+              }).then(
+                () => res.success(),
+                () => res.err('UNKNOWN')
+              );
             }
-          }
+          },
+          () => res.err('UNKNOWN')
         );
     })
     .delete((req, res) => {
@@ -250,17 +251,21 @@ const addAuthRoutes = (app: express.Application): void => {
       if (!username) res.err('INVALID_USERNAME');
       else if (!pass) res.err('INVALID_PASSWORD');
       else
-        db.findOne({ username }, async (err, doc) => {
-          if (err) res.err('UNKNOWN');
-          else if (!doc) res.err('USERNAME_PASSWORD_MISMATCH');
-          else if (!(await argon2.verify(doc.pass, pass)))
-            res.err('USERNAME_PASSWORD_MISMATCH');
-          else
-            db.remove(doc, err => {
-              if (err) res.err('UNKNOWN');
-              else res.success();
-            });
-        });
+        db.search({ username }).then(
+          async doc => {
+            if (!(doc && (await argon2.verify(doc.pass, pass))))
+              res.err('USERNAME_PASSWORD_MISMATCH');
+            else
+              db.deleteItem(doc).then(
+                success => {
+                  if (success) res.success();
+                  else res.err('UNKNOWN');
+                },
+                () => res.err('UNKNOWN')
+              );
+          },
+          () => res.err('UNKNOWN')
+        );
     })
     .patch(authorize, (req, res) => {
       const { _id: oldID } = req.jwt!;
@@ -268,23 +273,28 @@ const addAuthRoutes = (app: express.Application): void => {
       if (!username && !email) res.err('NO_CHANGES');
       if (username && (username.length < 4 || username.length > 32))
         res.err('INVALID_USERNAME');
-      db.findOne(
+      db.search(
         username && email
           ? { $or: [{ username }, { email }] }
           : username
           ? { username }
-          : { email },
-        (err, doc) => {
-          if (err) res.err('UNKNOWN');
-          else if (doc) res.err('USERNAME_OR_EMAIL_ALREADY_EXISTS');
+          : { email }
+      ).then(
+        doc => {
+          if (doc) res.err('USERNAME_OR_EMAIL_ALREADY_EXISTS');
           else {
-            db.update(
-              { _id: oldID },
-              { ...(username && { username }), ...(email && { email }) }
+            db.overwrite(oldID as Identifier<User>, {
+              $set: { ...(username && { username }), ...(email && { email }) }
+            }).then(
+              success => {
+                if (success) res.success();
+                else res.err('UNKNOWN');
+              },
+              () => res.err('UNKNOWN')
             );
-            res.success();
           }
-        }
+        },
+        () => res.err('UNKNOWN')
       );
     });
 };

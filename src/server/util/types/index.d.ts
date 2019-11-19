@@ -1,5 +1,6 @@
 import { ResponseError } from '../../../common/apiTypes';
 import { VerifyErrors } from 'jsonwebtoken';
+
 declare module 'express-serve-static-core' {
   interface Request {
     /**
