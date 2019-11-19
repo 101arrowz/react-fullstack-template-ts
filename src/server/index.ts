@@ -32,7 +32,7 @@ const createApp = (): express.Application => {
     }));
     for (let i = 0; i < resolved.length; ++i) {
       if (typeof resolved[i] === 'undefined' && typeof users[i] !== 'undefined')
-        resolved[i] = allowed((users[i] as User).profile, requester as Identifier<User>, users[i] as User);
+        resolved[i] = await allowed((users[i] as User).profile, requester as Identifier<User>, users[i] as User);
     }
     res.json(resolved);
   })
@@ -43,9 +43,9 @@ const createApp = (): express.Application => {
         username: req.params.id
       })
       .then(
-        user =>
+        async user =>
           user
-            ? res.success(allowed(user.profile, _id as string))
+            ? res.success(await allowed(user.profile, _id as string) || undefined)
             : res.err('USERNAME_NOT_FOUND'),
         () => res.err('UNKNOWN')
       );

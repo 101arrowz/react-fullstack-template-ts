@@ -1,12 +1,8 @@
 import { ResponseError } from '../../common/apiTypes';
 type RequestOptions<T> = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-  body?: RequestBody<T>;
+  body?: unknown;
   credentialsNeeded?: boolean;
-  raw?: object;
-};
-type RequestBody<T> = {
-  resolve?: (keyof T)[];
 };
 type ServerError = {
   code: ResponseError;
@@ -22,7 +18,7 @@ const request = <T = unknown>(
   { method = 'GET', credentialsNeeded = true, body }: RequestOptions<T> = {}
 ): Promise<T | ServerError> =>
   new Promise(async (resolve, reject) => {
-    const res = await fetch(`/api/${path}`, {
+    const res = await fetch(`/api${path}`, {
       method,
       credentials: credentialsNeeded ? 'include' : 'omit',
       headers: {

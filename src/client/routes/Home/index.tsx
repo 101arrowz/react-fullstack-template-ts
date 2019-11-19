@@ -5,7 +5,7 @@ const login = (username: string, fullPass: string): Promise<object> => {
   const { pass } = getLoginCredentials(username, fullPass);
   return request<object>('/login', {
     method: 'POST',
-    raw: {
+    body: {
       username,
       pass
     }
@@ -19,7 +19,7 @@ const signUp = (
   const { pass } = getLoginCredentials(username, fullPass);
   return request<object>('/manageuser', {
     method: 'PUT',
-    raw: {
+    body: {
       username,
       email,
       pass

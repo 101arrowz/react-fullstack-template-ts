@@ -37,7 +37,7 @@ const allowed = async <T extends Visible & Owned>(
   const { restrictedTo, ...newData } = data;
   if (owner && owner._id !== data.owner)
     owner = undefined;
-  const isAllowed = accessibleData[restrictedTo || 'unset'](newData, requester, owner);
+  const isAllowed = await accessibleData[restrictedTo || 'unset'](newData, requester, owner);
   if (isAllowed) {
     for (const kv of Object.entries(newData).filter(
       el =>

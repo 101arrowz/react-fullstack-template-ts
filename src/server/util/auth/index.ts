@@ -154,7 +154,7 @@ const addAuthRoutes = (app: express.Application): void => {
             res.err('USERNAME_PASSWORD_MISMATCH');
           else {
             res.assignTokens({ _id: doc._id }); // Change here to change data saved in token everywhere
-            res.success(allowed(doc.profile, doc));
+            res.success(await allowed(doc.profile, doc) || undefined);
           }
         },
         () => res.err('UNKNOWN')

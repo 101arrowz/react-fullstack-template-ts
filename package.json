@@ -11,7 +11,7 @@
     "maintained node versions"
   ],
   "scripts": {
-    "start": "tsnd --transpileOnly --respawn --no-deps src/server/index.dev.ts",
+    "start": "tsnd --transpileOnly --respawn --ignore-watch node_modules src/server/index.dev.ts",
     "lint": "eslint --fix \"src/**/*.ts{,x}\"",
     "ts-check": "tsc && tsc --noEmit src/client/sw.ts",
     "build-client": "NODE_ENV=production parcel build src/client/index.html --no-source-maps --experimental-scope-hoisting --detailed-report",
