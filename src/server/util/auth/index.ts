@@ -154,7 +154,7 @@ const addAuthRoutes = (app: express.Application): void => {
             res.err('USERNAME_PASSWORD_MISMATCH');
           else {
             res.assignTokens({ _id: doc._id }); // Change here to change data saved in token everywhere
-            res.success(await allowed(doc.profile, doc) || undefined);
+            res.success(await allowed(doc.profile, doc, doc) || undefined);
           }
         },
         () => res.err('UNKNOWN')
@@ -218,9 +218,7 @@ const addAuthRoutes = (app: express.Application): void => {
             if (doc) res.err('USERNAME_OR_EMAIL_ALREADY_EXISTS');
             else {
               const date = new Date();
-              const _id = uid('user-');
               db.createItem({
-                _id,
                 username,
                 email,
                 pass: await argon2.hash(pass, {
@@ -228,10 +226,19 @@ const addAuthRoutes = (app: express.Application): void => {
                   parallelism: 2
                 }),
                 profile: {
-                  owner: _id,
                   name: username,
+                  bio: '',
                   signedUp: date,
-                  lastLogin: date
+                  lastLogin: date,
+                  friendRequests: {
+                    incoming: [],
+                    outgoing: []
+                  },
+                  friends: [],
+                  comments: [],
+                  posts: [],
+                  likedPosts: [],
+                  conversations: []
                 },
                 prefs: {
                   private: false,

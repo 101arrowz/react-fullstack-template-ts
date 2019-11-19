@@ -42,7 +42,7 @@ export class DB<G extends Identifiable> extends DataStore<G> {
     return DB.promisify<G>(cb =>
       super.insert(
         {
-          _id: uid(this.name),
+          _id: uid(this.name + '-'),
           ...newItem
         } as G,
         cb

@@ -23,19 +23,18 @@ export type User = Identifiable &
     profile: Profile;
     prefs: Preferences;
   };
-export type Profile = Visible &
-  Owned & {
+export type Profile = Visible & {
     name: string; // Freely changeable
-    bio?: string;
-    icon?: string;
+    bio: string;
+    icon?: string; // A URL
     signedUp: Date;
     lastLogin: Date;
-    friends?: Identifier<User>[];
-    friendRequests?: FriendRequests;
-    posts?: Identifier<Post>[];
-    comments?: Identifier<Comment>[];
-    likedPosts?: Identifier<Post>[];
-    conversations?: Conversations;
+    friends: Identifier<User>[];
+    friendRequests: FriendRequests;
+    posts: Identifier<Post>[];
+    comments: Identifier<Comment>[];
+    likedPosts: Identifier<Post>[];
+    conversations: Conversations;
   };
 export type FriendRequests = {
   incoming: Identifier<DM>[];
@@ -50,7 +49,7 @@ export type Preferences = {
   private: boolean;
   lang: 'en-US' | 'en-GB'; // Add more if your audience needs more
 };
-export interface Content extends Identifiable, Owned {
+export interface Content extends Identifiable, Owned, Visible {
   content: EditHistory<string>;
 }
 export type DM = Content &
@@ -58,7 +57,7 @@ export type DM = Content &
   Expirable & {
     read: boolean;
   };
-export type Conversations = [Identifier<User>, DM[]];
+export type Conversations = [Identifier<User>, DM[]][];
 export type Post = Content &
   Visible & {
     title: string;

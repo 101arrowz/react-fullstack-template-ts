@@ -28,25 +28,23 @@ const accessibleData: { [k in LocalRestrictionLevel]: Restricter } = {
     return !!doc && doc.prefs.private ? this.owner(data, requester, owner) : this.all(data, requester, owner);
   }
 };
-const allowed = async <T extends Visible & Owned>(
+async function allowed<T extends Visible>(
   data: T,
   requester: Identifier<User>,
   owner?: User
-): Promise<T | void> => {
+): Promise<T | void> {
   if (typeof requester !== 'string') requester = requester._id;
-  const { restrictedTo, ...newData } = data;
-  if (owner && owner._id !== data.owner)
+  const newData = {...data} as unknown as T & Owned;
+  if (!(newData as Object).hasOwnProperty('owner') && owner)
+    newData.owner = owner._id;
+  if (!newData.owner) return;
+  if (owner && owner._id !== newData.owner)
     owner = undefined;
-  const isAllowed = await accessibleData[restrictedTo || 'unset'](newData, requester, owner);
+  const isAllowed = await accessibleData[newData.restrictedTo || 'unset'](newData, requester, owner);
   if (isAllowed) {
-    for (const kv of Object.entries(newData).filter(
-      el =>
-        el[1] instanceof Object &&
-        el[1].hasOwnProperty('restrictedTo') &&
-        el[1].hasOwnProperty('owner')
-    ) as [keyof typeof newData, Visible & Owned][]) {
+    for (const kv of Object.entries(newData).filter(el => el instanceof Object && el.hasOwnProperty('restrictedTo')) as [keyof typeof newData, Visible][]) {
       // Assume that all required properties will not have a restriction level
-      const newValue = await allowed(kv[1], requester, owner);
+      const newValue = await allowed({...owner && { owner: newData.owner || owner._id }, ...kv[1]} as Owned & Visible, requester, owner as User);
       if (!newValue) delete newData[kv[0]];
       else
         newData[
