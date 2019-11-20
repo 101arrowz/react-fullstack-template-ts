@@ -17,7 +17,7 @@ const signUp = (
   fullPass: string
 ): Promise<object> => {
   const { pass } = getLoginCredentials(username, fullPass);
-  return request<object>('/manageuser', {
+  return request<object>('/manage/user', {
     method: 'PUT',
     body: {
       username,

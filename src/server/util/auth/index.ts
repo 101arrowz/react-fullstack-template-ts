@@ -154,7 +154,7 @@ const addAuthRoutes = (app: express.Application): void => {
             res.err('USERNAME_PASSWORD_MISMATCH');
           else {
             res.assignTokens({ _id: doc._id }); // Change here to change data saved in token everywhere
-            res.success(await allowed(doc.profile, doc, doc) || undefined);
+            res.success((await allowed(doc.profile, doc, doc)) || undefined);
           }
         },
         () => res.err('UNKNOWN')
@@ -191,7 +191,7 @@ const addAuthRoutes = (app: express.Application): void => {
     })
   );
   app
-    .route('/manageuser')
+    .route('/manage/user')
     .put((req, res) => {
       res.cookie;
       // Protect users using same password on multiple sites by hashing on client AND server

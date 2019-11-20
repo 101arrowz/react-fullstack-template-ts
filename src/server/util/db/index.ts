@@ -27,7 +27,7 @@ export class DB<G extends Identifiable> extends DataStore<G> {
 
   constructor(name: string) {
     super({
-      filename: resolve(__dirname, `${name}.db`),
+      filename: resolve(__dirname, name + '.db'),
       autoload: true
     });
     this.name = name;
@@ -42,7 +42,7 @@ export class DB<G extends Identifiable> extends DataStore<G> {
     return DB.promisify<G>(cb =>
       super.insert(
         {
-          _id: uid(this.name + '-'),
+          _id: uid(this.name + '/'),
           ...newItem
         } as G,
         cb
@@ -145,7 +145,7 @@ const allDB = {
   post: new DB<Post>('post'),
   comment: new DB<Comment>('comment'),
   dm: new DB<DM>('dm')
-}
+};
 
 const userDB = allDB.user;
 const postDB = allDB.post;

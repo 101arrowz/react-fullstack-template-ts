@@ -24,18 +24,18 @@ export type User = Identifiable &
     prefs: Preferences;
   };
 export type Profile = Visible & {
-    name: string; // Freely changeable
-    bio: string;
-    icon?: string; // A URL
-    signedUp: Date;
-    lastLogin: Date;
-    friends: Identifier<User>[];
-    friendRequests: FriendRequests;
-    posts: Identifier<Post>[];
-    comments: Identifier<Comment>[];
-    likedPosts: Identifier<Post>[];
-    conversations: Conversations;
-  };
+  name: string; // Freely changeable
+  bio: string;
+  icon?: string; // A URL
+  signedUp: Date;
+  lastLogin: Date;
+  friends: Identifier<User>[];
+  friendRequests: FriendRequests;
+  posts: Identifier<Post>[];
+  comments: Identifier<Comment>[];
+  likedPosts: Identifier<Post>[];
+  conversations: Conversations;
+};
 export type FriendRequests = {
   incoming: Identifier<DM>[];
   outgoing: Identifier<DM>[];
@@ -49,21 +49,21 @@ export type Preferences = {
   private: boolean;
   lang: 'en-US' | 'en-GB'; // Add more if your audience needs more
 };
-export interface Content extends Identifiable, Owned, Visible {
-  content: EditHistory<string>;
+export interface Content<T = string> extends Identifiable, Owned, Visible {
+  content: EditHistory<T>;
 }
 export type DM = Content &
   Identifiable &
   Expirable & {
+    restrictedTo: 'all';
     read: boolean;
   };
 export type Conversations = [Identifier<User>, DM[]][];
-export type Post = Content &
-  Visible & {
-    title: string;
-    likes: number;
-    comments: Comment[];
-  };
+export type Post = Content<[string, string]> & {
+  title: string;
+  likes: number;
+  comments: Comment[];
+};
 export type Comment = Content & {
   likes: number;
 };
@@ -102,6 +102,14 @@ export const ResponseErrors = {
   INVALID_PASSWORD: {
     code: 400,
     friendly: 'The password is invalid.'
+  },
+  INVALID_IDENTIFIER: {
+    code: 400,
+    friendly: 'The provided item identifier is invalid.'
+  },
+  FORBIDDEN: {
+    code: 403,
+    friendly: 'This action is not allowed.'
   },
   COMMON_PASSWORD: {
     code: 403,
